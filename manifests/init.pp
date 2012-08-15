@@ -1,9 +1,14 @@
 class redmine (
-  $version  = "2.0.3",
-  $database = "redmine",
-  $username = "redmine",
-  $password = "redmine",
-  $host     = "localhost"
+  $version        = "2.0.3",
+  $admin_password = "admin",
+  $database       = "redmine",
+  $username       = "redmine",
+  $password       = "redmine",
+  $host           = "localhost",
+  # Redmine admin settings
+  $app_title      = "Redmine",
+  $host_name      = "localhost",
+  $ui_theme       = ""
 ) {
   $path     = "/usr/local/lib/redmine"
   $owner    = "www-data"
@@ -82,6 +87,21 @@ class redmine (
     user      => $owner,
     cwd       => $path,
     command   => "bundle exec rake generate_secret_token db:migrate redmine:load_default_data RAILS_ENV=production REDMINE_LANG=en",
+  }
+
+  file {"Preparing redmine settings":
+    require => Exec["Choosing redmine version"],
+    ensure  => present,
+    path    => "$path/config/settings.mysql.sql",
+    content => template("redmine/settings.mysql.sql.erb")
+  }
+
+  exec {"Applying redmine settings":
+    require     => [File["Preparing redmine settings"], Exec["Initializing redmine"]],
+    subscribe   => File["Preparing redmine settings"],
+    refreshonly => true,
+    cwd         => "$path/config",
+    command     => "mysql --default_character_set utf8 $database < settings.mysql.sql",
   }
 
 }

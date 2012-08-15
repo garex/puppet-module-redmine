@@ -1,0 +1,72 @@
+# Initial vars
+set @admin_password = '<%= scope.lookupvar("redmine::admin_password") %>';
+set @app_title = '<%= scope.lookupvar("redmine::app_title") %>';
+set @host_name = '<%= scope.lookupvar("redmine::host_name") %>';
+set @ui_theme = '<%= scope.lookupvar("redmine::ui_theme") %>';
+
+# Dev version vars
+select
+    @admin_password := 'admin',
+    @app_title := 'Redmine',
+    @host_name := 'localhost',
+    @ui_theme := 'alternate'
+from users where '1' != '<%=1%>' limit 1;
+
+# Update admin password
+update users
+set hashed_password = cast(sha1(concat(salt, sha1(@admin_password))) as char)
+where login = 'admin';
+
+# Update settings
+replace settings (id, name, value, updated_on)
+values
+    (1, 'app_title', @app_title, now()),
+    (2, 'host_name', @host_name, now()),
+    (3, 'ui_theme',  @ui_theme, now()),
+    (4, 'default_language', 'ru', now()),
+    (5, 'gravatar_enabled', 1, now()),
+    (6, 'gravatar_default', 'retro', now()),
+    (7, 'login_required', 1, now()),
+    (8, 'autologin', 365, now()),
+    (9, 'default_projects_public', 0, now()),
+    (10, 'default_projects_modules', '--- \n- issue_tracking\n- wiki\n- repository\n- calendar\n- gantt\n', now()),
+    (11, 'enabled_scm', '--- \n- Git\n', now()),
+    (12, 'unsubscribe', 0, now())
+;
+
+# Adding trackers
+replace trackers (id, is_in_roadmap, position, name)
+values
+    (1, 1, 4, 'Юзер'),
+    (2, 1, 1, 'Фича'),
+    (3, 0, 2, 'Задача'),
+    (4, 0, 3, 'Баг')
+;
+
+# Duplicating workflow from task to bug
+insert workflows (tracker_id, old_status_id, new_status_id, role_id)
+select 4, old_status_id, new_status_id, role_id from workflows
+where tracker_id = 3 and 0 = (select count(*) from workflows where tracker_id = 4);
+
+# Localizing statuses
+replace issue_statuses (id, is_default, is_closed, name)
+values
+    (1, 1, 0, 'Новинка'),
+    (2, 0, 0, 'В процессе'),
+    (3, 0, 0, 'Сделано'),
+    (4, 0, 0, 'Надо доделать'),
+    (5, 0, 1, 'Закрыто'),
+    (6, 0, 1, 'Отклонено')
+;
+
+# Localizing priorities
+update enumerations old, (
+    select null position, null name
+    union select 1, "Низкий"
+    union select 2, "Нормальный"
+    union select 3, "Высокий"
+    union select 4, "Срочный"
+    union select 5, "НЕМЕДЛЕННЫЙ"
+) new
+set old.name = new.name
+where old.position = new.position and old.type = 'IssuePriority' and new.name is not null;
