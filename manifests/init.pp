@@ -71,6 +71,7 @@ class redmine (
 
   exec {"Installing needed bundles":
     require   => [Exec["Making bundle bin visible"], Exec["Choosing redmine version"]],
+    creates   => "$path/config/initializers/secret_token.rb",
     cwd       => $path,
     command   => "bundle install --without development test postgresql sqlite",
   }
