@@ -4,14 +4,6 @@ set @app_title = '<%= scope.lookupvar("redmine::app_title") %>';
 set @host_name = '<%= scope.lookupvar("redmine::host_name") %>';
 set @ui_theme = '<%= scope.lookupvar("redmine::ui_theme") %>';
 
-# Dev version vars
-select
-    @admin_password := 'admin',
-    @app_title := 'Redmine',
-    @host_name := 'localhost',
-    @ui_theme := 'alternate'
-from users where '1' != '<%=1%>' limit 1;
-
 # Update admin password
 update users
 set hashed_password = cast(sha1(concat(salt, sha1(@admin_password))) as char)
@@ -47,26 +39,3 @@ values
 insert workflows (tracker_id, old_status_id, new_status_id, role_id)
 select 4, old_status_id, new_status_id, role_id from workflows
 where tracker_id = 3 and 0 = (select count(*) from workflows where tracker_id = 4);
-
-# Localizing statuses
-replace issue_statuses (id, is_default, is_closed, name)
-values
-    (1, 1, 0, 'Новинка'),
-    (2, 0, 0, 'В процессе'),
-    (3, 0, 0, 'Сделано'),
-    (4, 0, 0, 'Надо доделать'),
-    (5, 0, 1, 'Закрыто'),
-    (6, 0, 1, 'Отклонено')
-;
-
-# Localizing priorities
-update enumerations old, (
-    select null position, null name
-    union select 1, "Низкий"
-    union select 2, "Нормальный"
-    union select 3, "Высокий"
-    union select 4, "Срочный"
-    union select 5, "НЕМЕДЛЕННЫЙ"
-) new
-set old.name = new.name
-where old.position = new.position and old.type = 'IssuePriority' and new.name is not null;

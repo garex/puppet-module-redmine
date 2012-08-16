@@ -86,7 +86,14 @@ class redmine (
     creates   => "$path/config/initializers/secret_token.rb",
     user      => $owner,
     cwd       => $path,
-    command   => "bundle exec rake generate_secret_token db:migrate redmine:load_default_data RAILS_ENV=production REDMINE_LANG=en",
+    command   => "bundle exec rake generate_secret_token db:migrate RAILS_ENV=production REDMINE_LANG=ru",
+  }
+
+  exec {"Loading defaults in redmine":
+    require   => Exec["Initializing redmine"],
+    onlyif    => "test 0 = $(mysql -e 'select count(*) from $database.trackers' | tail -n1)",
+    cwd       => $path,
+    command   => "bundle exec rake redmine:load_default_data RAILS_ENV=production REDMINE_LANG=ru",
   }
 
   file {"Preparing redmine settings":
@@ -97,7 +104,7 @@ class redmine (
   }
 
   exec {"Applying redmine settings":
-    require     => [File["Preparing redmine settings"], Exec["Initializing redmine"]],
+    require     => [File["Preparing redmine settings"], Exec["Loading defaults in redmine"]],
     subscribe   => File["Preparing redmine settings"],
     refreshonly => true,
     cwd         => "$path/config",
