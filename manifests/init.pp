@@ -10,7 +10,7 @@ class redmine (
   $host_name      = "localhost",
   $ui_theme       = ""
 ) {
-  $path     = "/usr/local/lib/redmine"
+  $path     = "/./usr/local/lib/redmine"
   $owner    = "www-data"
   $gem_bin  = "$(gem env gemdir)/bin"
 
