@@ -6,20 +6,20 @@ Installs redmine and all dependencies on remote node. Did not installs webserver
 
 ### Redmine install
 
-    ```ruby
-    class {"redmine":
-      require         => Database_grant["redmine@localhost/redmine"],
-      version         => "2.0.3",
-      admin_password  => "Sengaezeivei7ku6feej",
-      database        => "redmine",
-      username        => "redmine",
-      password        => "redmine",
-      # Redmine admin settings
-      app_title       => "My Own Redmine",
-      host_name       => "redmine.company.com",
-      ui_theme        => "CM-red",
-    }
-    ```
+```ruby
+class {"redmine":
+  require         => Database_grant["redmine@localhost/redmine"],
+  version         => "2.0.3",
+  admin_password  => "Sengaezeivei7ku6feej",
+  database        => "redmine",
+  username        => "redmine",
+  password        => "redmine",
+  # Redmine admin settings
+  app_title       => "My Own Redmine",
+  host_name       => "redmine.company.com",
+  ui_theme        => "CM-red",
+}
+```
 
 ### Redmine theme
 
