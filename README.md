@@ -23,9 +23,11 @@ class {"redmine":
 
 ### Redmine theme
 
-    redmine::theme {"CM-red":
-      url             => "git://github.com/garex/puppet-theme-CM-red.git"
-    }
+```ruby
+redmine::theme {"CM-red":
+  url             => "git://github.com/garex/puppet-theme-CM-red.git"
+}
+```
 
 ## Why?
 
