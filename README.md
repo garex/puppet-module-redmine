@@ -6,7 +6,7 @@ Installs redmine and all dependencies on remote node. Did not installs webserver
 
 ### Redmine install
 
-    ```puppet
+    ```ruby
     class {"redmine":
       require         => Database_grant["redmine@localhost/redmine"],
       version         => "2.0.3",
