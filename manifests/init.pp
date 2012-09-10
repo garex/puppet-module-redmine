@@ -43,6 +43,16 @@ class redmine (
     command => "git checkout $version",
   }
 
+  $command_fetch_changesets = template("redmine/command_fetch_changesets.sh.erb")
+  file {"Making production log writable to allow execute fetch changesets from hooks":
+    require => Exec["Choosing redmine version"],
+    ensure  => present,
+    path    => "${path}/log/production.log",
+    owner   => $owner,
+    group   => $owner,
+    mode    => 0666,
+  }
+
   exec {"Setting redmine owner":
     require => Exec["Choosing redmine version"],
     cwd     => $path,
