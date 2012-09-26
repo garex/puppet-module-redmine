@@ -11,6 +11,7 @@ class redmine (
   $ui_theme       = ""
 ) {
   $path     = "/./usr/local/lib/redmine"
+  $real_path= "/usr/local/lib/redmine" # Needs due to a bug in "file as directory, recurse true"
   $owner    = "www-data"
   $gem_bin  = "$(gem env gemdir)/bin"
 
