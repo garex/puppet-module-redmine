@@ -1,6 +1,6 @@
 # Puppet module for redmine installation
 
-Installs redmine and all dependencies on remote node. Did not installs webservers, as in ruby world we have WEBrick. Requires DB installed. Allows to add redmine theme.
+Installs redmine and all dependencies on remote node. Did not installs webservers, as in ruby world we have WEBrick. Requires DB installed. Allows to add redmine theme and plugin.
 
 ## Usage
 
@@ -26,6 +26,16 @@ class {"redmine":
 ```ruby
 redmine::theme {"CM-red":
   url             => "git://github.com/garex/puppet-theme-CM-red.git"
+}
+```
+
+### Redmine plugin
+
+```ruby
+redmine::plugin {"redmine_local_avatars":
+  source              => "puppet:///modules/some_main_module/redmine_local_avatars",
+  # If you use thin for your ruby. It also could be apache, passenger, mongrel or else. We assume here, that you are at production
+  service_to_restart  => Service["thin"]
 }
 ```
 
