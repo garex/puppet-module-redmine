@@ -1,6 +1,5 @@
 define redmine::plugin (
-  $source,
-  $service_to_restart
+  $source
 ) {
 
   file {"Adding redmine module $name":
@@ -9,7 +8,7 @@ define redmine::plugin (
     source  => $source,
     ensure  => "directory",
     recurse => true,
-    notify  => $service_to_restart
+    notify  => $redmine::service_to_restart
   }
 
 }
