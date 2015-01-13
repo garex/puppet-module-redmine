@@ -1,14 +1,16 @@
 class redmine (
-  $version        = "2.0.3",
-  $admin_password = "admin",
-  $database       = "redmine",
-  $username       = "redmine",
-  $password       = "redmine",
-  $host           = "localhost",
+  $version              = "2.0.3",
+  $admin_password       = "admin",
+  $database             = "redmine",
+  $username             = "redmine",
+  $password             = "redmine",
+  $host                 = "localhost",
+  $configuration_source = undef,
+  $service_to_restart   = undef,
   # Redmine admin settings
-  $app_title      = "Redmine",
-  $host_name      = "localhost",
-  $ui_theme       = ""
+  $app_title            = "Redmine",
+  $host_name            = "localhost",
+  $ui_theme             = ""
 ) {
   $path     = "/./usr/local/lib/redmine"
   $real_path= "/usr/local/lib/redmine" # Needs due to a bug in "file as directory, recurse true"
@@ -70,6 +72,18 @@ class redmine (
     content => template("redmine/database.yml.erb")
   }
 
+  if $configuration_source {
+    file {"Configuring redmine by settings file":
+      require => Exec["Choosing redmine version"],
+      ensure  => present,
+      owner   => $owner,
+      group   => $owner,
+      path    => "$path/config/configuration.yml",
+      source  => $configuration_source,
+      notify  => $service_to_restart
+    }
+  }
+
   $gems_libraries = ["libmysqlclient-dev", "imagemagick", "libmagickwand-dev"]
   package {$gems_libraries:}
 
@@ -94,6 +108,7 @@ class redmine (
 
   exec {"Initializing redmine":
     require   => [File["Setting up redmine database"], Exec["Installing needed bundles"], Exec["Setting redmine owner"]],
+    before    => $service_to_restart,
     creates   => "$path/config/initializers/secret_token.rb",
     user      => $owner,
     cwd       => $path,
